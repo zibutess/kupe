@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "origin": {
+    "base_url": "https://api.anthropic.com"
+  },
+  "resources": {
+    "./agent/environment.yaml": {
+      "kind": "environment",
+      "id": "env_01JKpQxurbas3wG2HmK5Sv4A",
+      "hash": "3aa742c7ecf248acb58ea1ef723492b7",
+      "remote_hash": "b62a833170eed91dc94d28de9e98d283",
+      "stamp": "2026-11-12T20:59:56.562020Z"
+    },
+    "./agent/trip-planner.md": {
+      "kind": "agent",
+      "id": "agent_0128Bz2M6G5augtRg3gxaTTq",
+      "version": "2",
+      "hash": "fd631deb23aaf45a4c80f4c936ab69dc",
+      "remote_hash": "d0a87b14b27389bed903613b467f14cd",
+      "stamp": "2"
+    }
+  }
+}
