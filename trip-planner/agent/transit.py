@@ -1,8 +1,9 @@
-import os, json, time, hashlib
+import os
 import requests
 
+import db
+
 CACHE_TTL = 60  # seconds; check Google's caching terms before raising this
-_cache: dict[str, tuple[float, dict]] = {}
 
 TRANSIT_TOOL = {
     "type": "custom",
@@ -38,10 +39,15 @@ def plan_transit_trip(origin: str, destination: str, depart_at: str | None = Non
     if not api_key:
         return {"error": "GOOGLE_MAPS_API_KEY not set"}
 
-    key = hashlib.sha1(json.dumps([origin, destination, depart_at]).encode()).hexdigest()
-    hit = _cache.get(key)
-    if hit and time.time() - hit[0] < CACHE_TTL:
-        return hit[1]
+    # Saved answer in Supabase (shared by all users, survives restarts).
+    # If the database is unreachable, just ask Google instead of failing.
+    key = db.cache_key("transit", origin, destination, depart_at)
+    try:
+        hit = db.cache_get(key)
+        if hit is not None:
+            return hit
+    except Exception as e:
+        print(f"[cache] read failed: {e}")
 
     body = {
         "origin": {"address": origin},
@@ -91,7 +97,10 @@ def plan_transit_trip(origin: str, destination: str, depart_at: str | None = Non
         result["predicted_note"] = ("Date is after the 13 Dec 2026 timetable change or beyond "
                                     "published data: these times are predicted and may differ. "
                                     "Show the plain time and start the Notes cell with 'predicted'.")
-    _cache[key] = (time.time(), result)
+    try:
+        db.cache_set(key, "transit", result, ttl_seconds=CACHE_TTL)
+    except Exception as e:
+        print(f"[cache] save failed: {e}")
     return result
 
 

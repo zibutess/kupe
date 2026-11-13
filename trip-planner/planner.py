@@ -1,9 +1,8 @@
 import os, re, json, uuid, anthropic
-from datetime import datetime
-from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
+import db
 from agent.transit import TOOL_HANDLERS as TRANSIT_HANDLERS
 from agent.attractions import TOOL_HANDLERS as ATTRACTION_HANDLERS
 from agent.night_trains import TOOL_HANDLERS as NIGHT_HANDLERS
@@ -12,8 +11,6 @@ TOOL_HANDLERS = {**TRANSIT_HANDLERS, **ATTRACTION_HANDLERS, **NIGHT_HANDLERS}
 
 client = anthropic.Anthropic()
 MAX_TOOL_CALLS = 8         # per user message, caps Google spend
-CHAT_DIR = Path("chats")
-CHAT_DIR.mkdir(exist_ok=True)
 FIRST_QUESTION = "What is your next destination?"
 QUESTIONS_RE = re.compile(r"```questions\s*(.*?)```", re.S)
 BOOKING_RE = re.compile(r"```booking\s*(.*?)```", re.S)
@@ -74,35 +71,37 @@ def split_booking(text: str, allowed_urls=()):
     return stripped, items
 
 
-# ---------- saved chats ----------
+# ---------- saved chats (Supabase, see db.py) ----------
+# Every chat belongs to one user. Until sign-in exists, the user is DEV_USER_ID
+# from .env. Later server.py will pass the signed-in user's id instead.
 
-def chat_path(chat_id: str) -> Path:
-    return CHAT_DIR / f"{chat_id}.json"
+def _user(user_id: str | None) -> str:
+    return user_id or os.environ["DEV_USER_ID"]
+
+def _shape(row: dict) -> dict:
+    """Database row -> the chat dict the rest of the code expects."""
+    row["created"] = row["created_at"][:19].replace("T", " ")
+    return row
 
 def save_chat(chat: dict) -> None:
-    chat_path(chat["id"]).write_text(json.dumps(chat, indent=2, ensure_ascii=False))
+    db.save_chat(chat)
 
-def load_chat(chat_id: str):
-    if not re.fullmatch(r"[0-9a-f]{8}", chat_id):
+def load_chat(chat_id: str, user_id: str | None = None):
+    try:
+        uuid.UUID(chat_id)
+    except ValueError:
         return None
-    p = chat_path(chat_id)
-    return json.loads(p.read_text()) if p.exists() else None
+    row = db.get_chat(_user(user_id), chat_id)
+    return _shape(row) if row else None
 
-def list_chats() -> list[dict]:
-    chats = [json.loads(p.read_text()) for p in CHAT_DIR.glob("*.json")]
-    return sorted(chats, key=lambda c: c["created"], reverse=True)
+def list_chats(user_id: str | None = None) -> list[dict]:
+    return [_shape(r) for r in db.list_chats(_user(user_id), with_messages=True)]
 
-def new_chat() -> dict:
+def new_chat(user_id: str | None = None) -> dict:
     """Instant: the agent session is created lazily on the first message."""
-    chat = {
-        "id": uuid.uuid4().hex[:8],
-        "session_id": None,
-        "created": datetime.now().isoformat(timespec="seconds"),
-        "messages": [{"role": "agent", "text": FIRST_QUESTION}],
-        "seen": [],
-    }
-    save_chat(chat)
-    return chat
+    row = db.new_chat(_user(user_id),
+                      messages=[{"role": "agent", "text": FIRST_QUESTION}])
+    return _shape(row)
 
 
 # ---------- talking to the agent ----------
