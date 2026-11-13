@@ -1,10 +1,10 @@
 :root {
-  --red: #6f1d2e;          /* wine */
-  --red-deep: #4e1220;
-  --red-soft: #f4e9e7;
+  --red: #7a2e1d;          /* brick brown-red */
+  --red-deep: #53200f;
+  --red-soft: #f7ebe4;
   --fg: #2f2a2c;
   --muted: #857a7c;
-  --line: #e7dcd9;
+  --line: #ecdcd8;
   --serif: "Fraunces", "Iowan Old Style", Georgia, serif;
   --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 }
@@ -15,8 +15,9 @@ body {
   color: var(--fg);
   /* a calm sunset: pale sky, apricot glow low on the horizon, dusk into wine */
   background:
-    radial-gradient(ellipse 70% 30% at 50% 82%, rgba(255, 196, 140, .45), transparent 70%),
-    linear-gradient(180deg, #fbf1e6 0%, #f9e8d6 30%, #f1cdb4 55%, #d9958a 75%, #9c4a55 90%, #5a1d2d 100%) fixed;
+    url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201600%20500'%20preserveAspectRatio='xMidYMax%20slice'%3E%3Cpath%20fill='%23c4745c'%20fill-opacity='.35'%20d='M0%20500%20L0%20304%20L8%20284%20L16%20278%20L24%20283%20L32%20270%20L40%20264%20L48%20250%20L56%20238%20L64%20252%20L72%20247%20L80%20211%20L88%20217%20L96%20195%20L104%20218%20L112%20191%20L120%20170%20L128%20201%20L136%20179%20L144%20190%20L152%20232%20L160%20240%20L168%20230%20L176%20225%20L184%20251%20L192%20263%20L200%20264%20L208%20282%20L216%20284%20L224%20285%20L232%20291%20L240%20303%20L248%20309%20L256%20311%20L264%20298%20L272%20292%20L280%20288%20L288%20257%20L296%20253%20L304%20239%20L312%20242%20L320%20201%20L328%20192%20L336%20210%20L344%20189%20L352%20157%20L360%20143%20L368%20117%20L376%20132%20L384%20108%20L392%20131%20L400%20165%20L408%20164%20L416%20163%20L424%20179%20L432%20206%20L440%20216%20L448%20247%20L456%20251%20L464%20246%20L472%20268%20L480%20285%20L488%20286%20L496%20293%20L504%20298%20L512%20299%20L520%20293%20L528%20287%20L536%20276%20L544%20277%20L552%20275%20L560%20267%20L568%20274%20L576%20269%20L584%20244%20L592%20230%20L600%20236%20L608%20237%20L616%20239%20L624%20222%20L632%20198%20L640%20199%20L648%20214%20L656%20209%20L664%20237%20L672%20233%20L680%20225%20L688%20242%20L696%20252%20L704%20262%20L712%20260%20L720%20255%20L728%20284%20L736%20270%20L744%20275%20L752%20279%20L760%20287%20L768%20291%20L776%20294%20L784%20283%20L792%20275%20L800%20274%20L808%20240%20L816%20237%20L824%20238%20L832%20215%20L840%20203%20L848%20196%20L856%20183%20L864%20161%20L872%20143%20L880%20129%20L888%20124%20L896%20137%20L904%20124%20L912%20141%20L920%20131%20L928%20130%20L936%20148%20L944%20162%20L952%20175%20L960%20212%20L968%20202%20L976%20221%20L984%20253%20L992%20265%20L1000%20276%20L1008%20267%20L1016%20290%20L1024%20302%20L1032%20286%20L1040%20286%20L1048%20287%20L1056%20279%20L1064%20263%20L1072%20267%20L1080%20258%20L1088%20238%20L1096%20239%20L1104%20237%20L1112%20225%20L1120%20235%20L1128%20214%20L1136%20206%20L1144%20209%20L1152%20209%20L1160%20182%20L1168%20206%20L1176%20225%20L1184%20217%20L1192%20216%20L1200%20250%20L1208%20257%20L1216%20259%20L1224%20248%20L1232%20270%20L1240%20262%20L1248%20269%20L1256%20279%20L1264%20291%20L1272%20282%20L1280%20291%20L1288%20299%20L1296%20297%20L1304%20279%20L1312%20276%20L1320%20262%20L1328%20260%20L1336%20241%20L1344%20249%20L1352%20232%20L1360%20196%20L1368%20188%20L1376%20201%20L1384%20165%20L1392%20179%20L1400%20137%20L1408%20134%20L1416%20141%20L1424%20150%20L1432%20174%20L1440%20140%20L1448%20193%20L1456%20167%20L1464%20172%20L1472%20200%20L1480%20227%20L1488%20211%20L1496%20219%20L1504%20238%20L1512%20254%20L1520%20267%20L1528%20277%20L1536%20289%20L1544%20287%20L1552%20300%20L1560%20312%20L1568%20320%20L1576%20319%20L1584%20329%20L1592%20330%20L1600%20330%20L1600%20500%20Z'/%3E%3Cpath%20fill='%239a432c'%20fill-opacity='.55'%20d='M0%20500%20L0%20284%20L8%20277%20L16%20311%20L24%20304%20L32%20258%20L40%20256%20L48%20252%20L56%20265%20L64%20248%20L72%20255%20L80%20264%20L88%20293%20L96%20286%20L104%20295%20L112%20287%20L120%20283%20L128%20292%20L136%20316%20L144%20326%20L152%20339%20L160%20352%20L168%20358%20L176%20350%20L184%20360%20L192%20364%20L200%20350%20L208%20354%20L216%20347%20L224%20351%20L232%20353%20L240%20337%20L248%20337%20L256%20317%20L264%20290%20L272%20297%20L280%20312%20L288%20272%20L296%20269%20L304%20272%20L312%20271%20L320%20286%20L328%20292%20L336%20317%20L344%20299%20L352%20307%20L360%20342%20L368%20328%20L376%20336%20L384%20350%20L392%20354%20L400%20361%20L408%20356%20L416%20371%20L424%20369%20L432%20384%20L440%20369%20L448%20355%20L456%20354%20L464%20337%20L472%20309%20L480%20301%20L488%20295%20L496%20293%20L504%20272%20L512%20234%20L520%20251%20L528%20183%20L536%20212%20L544%20143%20L552%20175%20L560%2098%20L568%20141%20L576%20176%20L584%20193%20L592%20201%20L600%20223%20L608%20258%20L616%20279%20L624%20278%20L632%20275%20L640%20305%20L648%20340%20L656%20328%20L664%20346%20L672%20341%20L680%20355%20L688%20331%20L696%20347%20L704%20319%20L712%20327%20L720%20322%20L728%20286%20L736%20313%20L744%20286%20L752%20261%20L760%20285%20L768%20279%20L776%20233%20L784%20251%20L792%20225%20L800%20261%20L808%20247%20L816%20267%20L824%20245%20L832%20286%20L840%20247%20L848%20303%20L856%20276%20L864%20317%20L872%20313%20L880%20297%20L888%20331%20L896%20337%20L904%20325%20L912%20343%20L920%20360%20L928%20339%20L936%20368%20L944%20372%20L952%20347%20L960%20320%20L968%20294%20L976%20303%20L984%20272%20L992%20271%20L1000%20223%20L1008%20176%20L1016%20153%20L1024%20113%20L1032%20100%20L1040%2062%20L1048%20105%20L1056%20152%20L1064%20196%20L1072%20184%20L1080%20232%20L1088%20266%20L1096%20266%20L1104%20266%20L1112%20321%20L1120%20321%20L1128%20346%20L1136%20359%20L1144%20384%20L1152%20362%20L1160%20372%20L1168%20356%20L1176%20354%20L1184%20360%20L1192%20335%20L1200%20342%20L1208%20338%20L1216%20332%20L1224%20319%20L1232%20315%20L1240%20282%20L1248%20279%20L1256%20245%20L1264%20237%20L1272%20224%20L1280%20260%20L1288%20238%20L1296%20241%20L1304%20219%20L1312%20226%20L1320%20225%20L1328%20240%20L1336%20275%20L1344%20275%20L1352%20278%20L1360%20312%20L1368%20318%20L1376%20309%20L1384%20329%20L1392%20313%20L1400%20338%20L1408%20350%20L1416%20354%20L1424%20360%20L1432%20361%20L1440%20341%20L1448%20331%20L1456%20325%20L1464%20299%20L1472%20305%20L1480%20258%20L1488%20239%20L1496%20237%20L1504%20241%20L1512%20222%20L1520%20202%20L1528%20227%20L1536%20184%20L1544%20176%20L1552%20217%20L1560%20237%20L1568%20202%20L1576%20245%20L1584%20250%20L1592%20242%20L1600%20273%20L1600%20500%20Z'/%3E%3Cpath%20fill='%236b2616'%20fill-opacity='.85'%20d='M0%20500%20L0%20445%20L8%20438%20L16%20437%20L24%20430%20L32%20426%20L40%20434%20L48%20431%20L56%20411%20L64%20419%20L72%20416%20L80%20394%20L88%20403%20L96%20389%20L104%20395%20L112%20386%20L120%20396%20L128%20377%20L136%20365%20L144%20372%20L152%20360%20L160%20357%20L168%20375%20L176%20344%20L184%20346%20L192%20353%20L200%20360%20L208%20330%20L216%20351%20L224%20346%20L232%20345%20L240%20356%20L248%20353%20L256%20376%20L264%20367%20L272%20383%20L280%20372%20L288%20379%20L296%20405%20L304%20408%20L312%20409%20L320%20395%20L328%20412%20L336%20411%20L344%20422%20L352%20421%20L360%20427%20L368%20428%20L376%20418%20L384%20412%20L392%20398%20L400%20398%20L408%20385%20L416%20380%20L424%20369%20L432%20372%20L440%20382%20L448%20351%20L456%20340%20L464%20335%20L472%20341%20L480%20327%20L488%20342%20L496%20307%20L504%20311%20L512%20318%20L520%20323%20L528%20289%20L536%20291%20L544%20341%20L552%20316%20L560%20340%20L568%20358%20L576%20359%20L584%20347%20L592%20351%20L600%20386%20L608%20374%20L616%20398%20L624%20384%20L632%20401%20L640%20393%20L648%20397%20L656%20414%20L664%20409%20L672%20429%20L680%20438%20L688%20433%20L696%20447%20L704%20448%20L712%20449%20L720%20449%20L728%20450%20L736%20450%20L744%20445%20L752%20450%20L760%20444%20L768%20445%20L776%20450%20L784%20450%20L792%20450%20L800%20448%20L808%20449%20L816%20449%20L824%20448%20L832%20444%20L840%20450%20L848%20447%20L856%20436%20L864%20437%20L872%20429%20L880%20407%20L888%20408%20L896%20399%20L904%20405%20L912%20384%20L920%20369%20L928%20380%20L936%20348%20L944%20336%20L952%20351%20L960%20315%20L968%20311%20L976%20289%20L984%20296%20L992%20264%20L1000%20250%20L1008%20284%20L1016%20287%20L1024%20260%20L1032%20255%20L1040%20307%20L1048%20306%20L1056%20311%20L1064%20334%20L1072%20342%20L1080%20355%20L1088%20362%20L1096%20364%20L1104%20383%20L1112%20390%20L1120%20388%20L1128%20416%20L1136%20412%20L1144%20416%20L1152%20433%20L1160%20431%20L1168%20415%20L1176%20423%20L1184%20420%20L1192%20410%20L1200%20399%20L1208%20410%20L1216%20400%20L1224%20395%20L1232%20375%20L1240%20382%20L1248%20363%20L1256%20381%20L1264%20371%20L1272%20354%20L1280%20340%20L1288%20351%20L1296%20355%20L1304%20354%20L1312%20331%20L1320%20341%20L1328%20307%20L1336%20309%20L1344%20344%20L1352%20345%20L1360%20328%20L1368%20341%20L1376%20340%20L1384%20363%20L1392%20376%20L1400%20375%20L1408%20363%20L1416%20385%20L1424%20387%20L1432%20390%20L1440%20395%20L1448%20400%20L1456%20391%20L1464%20415%20L1472%20413%20L1480%20380%20L1488%20372%20L1496%20359%20L1504%20369%20L1512%20340%20L1520%20331%20L1528%20351%20L1536%20318%20L1544%20304%20L1552%20302%20L1560%20299%20L1568%20321%20L1576%20327%20L1584%20342%20L1592%20357%20L1600%20345%20L1600%20500%20Z'/%3E%3C/svg%3E") center bottom / 100% 62% no-repeat fixed,
+    radial-gradient(ellipse 70% 30% at 50% 82%, rgba(255, 190, 130, .5), transparent 70%),
+    linear-gradient(180deg, #fbf1e6 0%, #f7e2d0 30%, #ecc0a4 55%, #c9805f 75%, #8f3a22 90%, #53200f 100%) fixed;
   background-color: #fbf1e6;
   -webkit-text-size-adjust: 100%;
 }
@@ -61,7 +62,7 @@ header button { width: 40px; height: 40px; border: 0; background: none; color: v
 .bubble > :last-child { margin-bottom: 0; }
 .bubble p { margin: .4em 0; }
 .bubble.user { align-self: flex-end; background: var(--red); color: #fff; white-space: pre-wrap; border-bottom-right-radius: 4px; }
-.bubble.agent { align-self: flex-start; background: rgba(255, 255, 255, .94); border: 1px solid var(--line); border-bottom-left-radius: 4px; box-shadow: 0 1px 10px rgba(78, 18, 32, .08); }
+.bubble.agent { align-self: flex-start; background: rgba(255, 255, 255, .94); border: 1px solid var(--line); border-bottom-left-radius: 4px; box-shadow: 0 1px 10px rgba(125, 18, 25, .08); }
 .bubble.opening { font: italic 400 19px/1.4 var(--serif); color: var(--red); }
 .bubble.agent.wide { max-width: 100%; }
 .bubble strong { font-weight: 600; color: var(--red); }
@@ -73,17 +74,15 @@ header button { width: 40px; height: 40px; border: 0; background: none; color: v
 
 /* tables: a ticket-like card that stands apart from the prose */
 .table-card {
-  margin: 14px -4px; border-radius: 12px; overflow: hidden; background: #fff;
-  border: 1px solid var(--red); box-shadow: 0 4px 16px rgba(78, 18, 32, .16);
+  margin: 14px -4px; border-radius: 12px; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; background: #fff;
+  border: 1px solid var(--red); box-shadow: 0 4px 16px rgba(94, 12, 19, .18);
 }
-.bubble table { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 0; font-size: 13px; line-height: 1.4; }
-.bubble th, .bubble td { padding: 8px 6px; text-align: left; vertical-align: top; overflow-wrap: break-word; hyphens: auto; }
-/* Time | From → To | How | Operator / line | Price | Notes — give the wordy columns room */
-.bubble th:nth-child(1) { width: 15%; }
-.bubble th:nth-child(2) { width: 21%; }
-.bubble th:nth-child(3) { width: 11%; }
-.bubble th:nth-child(4) { width: 17%; }
-.bubble th:nth-child(5) { width: 13%; }
+.bubble table { width: 100%; min-width: 600px; table-layout: auto; overflow-wrap: normal; word-break: normal; border-collapse: collapse; margin: 0; font-size: 13px; line-height: 1.4; }
+.bubble th, .bubble td { padding: 8px 10px; text-align: left; vertical-align: top; }
+/* Time | From → To | How | Operator / line | Price | Notes — columns size to content, the card scrolls sideways */
+.bubble th:nth-child(1), .bubble td:nth-child(1) { white-space: nowrap; }
+.bubble td:nth-child(2) { min-width: 120px; }
+.bubble td:nth-child(6) { min-width: 150px; }
 .bubble th {
   background: var(--red); color: #fff; font-weight: 600; font-size: 10px;
   letter-spacing: .05em; hyphens: none; text-transform: uppercase;
@@ -120,6 +119,24 @@ header button { width: 40px; height: 40px; border: 0; background: none; color: v
 .questions input:focus { outline: none; border-bottom-width: 2px; }
 .questions button { align-self: flex-start; padding: 8px 18px; border: 1px solid var(--red); border-radius: 20px; background: var(--red); color: #fff; }
 
+/* booking checklist */
+.booking { margin-top: 12px; padding: 12px 12px 8px 14px; background: var(--red-soft); border-radius: 10px; border-left: 3px dashed var(--red); }
+.booking-head { display: flex; justify-content: space-between; align-items: baseline; font: 500 13px var(--serif); letter-spacing: .18em; text-transform: uppercase; color: var(--red); }
+.booking-count { font: 500 12px var(--sans); letter-spacing: 0; text-transform: none; color: var(--muted); }
+.booking.all-done .booking-count { color: var(--red); }
+.booking ol { list-style: none; margin: 8px 0 0; padding: 0; counter-reset: leg; }
+.booking li { counter-increment: leg; display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+.booking li:first-child { border-top: 0; }
+.booking input[type=checkbox] { width: 22px; height: 22px; margin: 2px 0 0; accent-color: var(--red); }
+.leg { display: flex; flex-direction: column; min-width: 0; }
+.leg strong::before { content: counter(leg) ". "; color: var(--red); }
+.leg-meta, .leg-note { font-size: 13px; color: var(--muted); }
+.leg-actions { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.leg-actions a, .leg-actions button { padding: 6px 14px; border: 1px solid var(--red); border-radius: 18px; font-size: 13px; text-decoration: none; background: var(--red); color: #fff; }
+.leg-actions button { background: transparent; color: var(--red); }
+.booking li.done .leg { opacity: .55; }
+.booking li.done .leg strong { text-decoration: line-through; }
+
 /* composer */
 #composer {
   display: flex; align-items: center; gap: 6px; margin: 4px 12px calc(10px + env(safe-area-inset-bottom));
@@ -130,7 +147,7 @@ header button { width: 40px; height: 40px; border: 0; background: none; color: v
 #send { width: 42px; height: 42px; flex: none; border: 0; border-radius: 50%; background: var(--red); color: #fff; display: grid; place-items: center; padding: 0; }
 
 /* journeys drawer */
-#scrim { position: fixed; inset: 0; background: rgba(50, 10, 20, .35); opacity: 0; pointer-events: none; transition: opacity .25s; }
+#scrim { position: fixed; inset: 0; background: rgba(70, 8, 12, .35); opacity: 0; pointer-events: none; transition: opacity .25s; }
 #drawer {
   position: fixed; top: 0; bottom: 0; left: 0; width: min(80vw, 320px); background: #fff; padding: calc(14px + env(safe-area-inset-top)) 14px 14px;
   transform: translateX(-102%); transition: transform .28s ease; overflow-y: auto; box-shadow: 4px 0 24px rgba(0, 0, 0, .2);
@@ -146,3 +163,17 @@ body.open #drawer { transform: none; }
   border-radius: 6px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 #chat-list li.active { color: var(--red); border-color: var(--red); background: var(--red-soft); }
+
+/* predicted timetables: "!" badge, tinted row, legend callout */
+:root { --warn: #b26a00; --warn-soft: #fff4de; }
+.predicted-badge {
+  display: inline-block; padding: 2px 6px; margin-left: 4px;
+  border-radius: 8px; background: var(--warn); color: #fff; font: 700 10px/1.2 var(--sans); text-transform: uppercase; letter-spacing: .03em;
+  vertical-align: 1px; cursor: help;
+}
+.bubble tbody tr.predicted td { background: var(--warn-soft); border-top-style: dashed; border-top-color: var(--warn); }
+.bubble tbody tr.predicted td:first-child { box-shadow: inset 3px 0 0 var(--warn); }
+.bubble p.predicted-legend {
+  margin: 8px 0; padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--warn);
+  background: var(--warn-soft); color: #6b4200; font-size: 13px;
+}

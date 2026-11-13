@@ -16,6 +16,8 @@ CHAT_DIR = Path("chats")
 CHAT_DIR.mkdir(exist_ok=True)
 FIRST_QUESTION = "What is your next destination?"
 QUESTIONS_RE = re.compile(r"```questions\s*(.*?)```", re.S)
+BOOKING_RE = re.compile(r"```booking\s*(.*?)```", re.S)
+BOOKING_FIELDS = ("label", "operator", "train", "date", "depart", "note")
 
 
 # ---------- helpers ----------
@@ -30,6 +32,46 @@ def split_questions(text: str):
     except json.JSONDecodeError:
         return text, []
     return QUESTIONS_RE.sub("", text).strip(), questions
+
+
+def collect_urls(data, out: set) -> None:
+    """Every http(s) URL found anywhere in a tool result."""
+    if isinstance(data, str):
+        if data.startswith(("http://", "https://")):
+            out.add(data)
+    elif isinstance(data, dict):
+        for v in data.values():
+            collect_urls(v, out)
+    elif isinstance(data, list):
+        for v in data:
+            collect_urls(v, out)
+
+
+def split_booking(text: str, allowed_urls=()):
+    """Return (text without the booking block, checklist items).
+
+    A link is kept only if a tool returned that exact URL this chat, so the
+    model can never put an invented link in front of someone about to pay.
+    """
+    m = BOOKING_RE.search(text)
+    if not m:
+        return text, []
+    stripped = BOOKING_RE.sub("", text).strip()
+    try:
+        raw = json.loads(m.group(1))
+    except json.JSONDecodeError:
+        return stripped, []
+    allowed = set(allowed_urls)
+    items = []
+    for r in raw if isinstance(raw, list) else []:
+        if not isinstance(r, dict):
+            continue
+        item = {k: str(r[k])[:120] for k in BOOKING_FIELDS if r.get(k)}
+        url = r.get("url")
+        item["url"] = url if isinstance(url, str) and url in allowed else ""
+        if item.get("label"):
+            items.append(item)
+    return stripped, items
 
 
 # ---------- saved chats ----------
@@ -114,6 +156,9 @@ def send_message(chat: dict, text: str) -> str:
                             data = {"error": "tool call budget reached"}
                         elif handler:
                             data = handler(**ev.input)
+                            urls = set(chat.get("urls", []))
+                            collect_urls(data, urls)
+                            chat["urls"] = sorted(urls)
                         else:
                             data = {"error": f"unknown tool {ev.name}"}
                         results.append({
@@ -172,7 +217,7 @@ def main() -> None:
     questions = []
     for m in chat["messages"]:
         who = "You" if m["role"] == "user" else "Agent"
-        shown, questions = split_questions(m["text"]) if m["role"] == "agent" else (m["text"], [])
+        shown, questions = split_questions(split_booking(m["text"])[0]) if m["role"] == "agent" else (m["text"], [])
         print(f"\n{who}: {shown}")
 
     print("\n(type 'quit' to exit; your chat is saved)")
@@ -185,7 +230,7 @@ def main() -> None:
         if not text:
             continue
         reply = handle_user_text(chat, text)
-        shown, questions = split_questions(reply)
+        shown, questions = split_questions(split_booking(reply)[0])
         print(f"\nAgent: {shown}")
 
 if __name__ == "__main__":

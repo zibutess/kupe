@@ -16,6 +16,7 @@ BASE = "https://back-on-track-eu.github.io/night-train-data/data/latest"
 FILES = ["trips", "trip_stop", "agencies", "view_ontd_details"]   # ~1.6 MB; skip stops.json (11 MB)
 CACHE_DIR = Path(__file__).parent / ".night_cache"
 CACHE_TTL = 12 * 3600                                             # source refreshes twice a day
+TIMETABLE_CHANGE = Date(2026, 12, 12)                            # new European timetable starts 13 Dec
 ATTRIBUTION = "Night train data © Back-on-Track Europe (ODbL 1.0), back-on-track.eu"
 
 # Where else to look. Only generic pages: we can't verify that a given reseller
@@ -126,34 +127,56 @@ def _load() -> dict:
 _DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 
 
-def _runs_on(service: str, d: Date) -> bool | None:
+def _shift(d: Date, years: int) -> Date:
+    try:
+        return d.replace(year=d.year + years)
+    except ValueError:                               # 29 Feb
+        return d.replace(year=d.year + years, day=28)
+
+
+def _runs_on(service: str, d: Date) -> tuple[bool | None, bool]:
     """Best-effort parse of strings like '2026: Mon, Wed, Fri', '2026/06/26-08/30: Daily',
-    '2026: Daily, except Sat'. True/False if sure, None if the pattern is unclear."""
+    '2026: Daily, except Sat'. Returns (runs, predicted).
+
+    runs is True/False if sure, None if the pattern is unclear. predicted is True when the
+    date lies after the year(s) the database covers, so the answer is extrapolated from the
+    published pattern (same weekdays / same season dates, shifted to the travel year)."""
     if not service:
-        return None
+        return None, False
     head, _, pattern = service.partition(":")
     pattern = pattern.strip().lower()
     m = re.fullmatch(r"(\d{4})(?:/(\d\d)/(\d\d)-(?:(\d{4})/)?(\d\d)/(\d\d))?", head.strip())
     if not m or not pattern:
-        return None
+        return None, False
     year = int(m.group(1))
+    predicted = False
     if m.group(2):
         start = Date(year, int(m.group(2)), int(m.group(3)))
         end = Date(int(m.group(4) or year), int(m.group(5)), int(m.group(6)))
         if end < start:                              # range wraps over New Year
             end = Date(end.year + 1, end.month, end.day)
         if not start <= d <= end:
-            return False
-    elif d.year != year:
-        return None                                  # plain "2026:" says nothing about 2027
+            if d <= end:
+                return False, False
+            # after the published season: assume it repeats on the same dates each year
+            for k in range(d.year - end.year, d.year - end.year + 2):
+                if _shift(start, k) <= d <= _shift(end, k):
+                    predicted = True
+                    break
+            else:
+                return False, True
+    elif d.year > year:
+        predicted = True                             # plain "2026:" -> assume the same weekdays
+    elif d.year < year:
+        return None, False
     dow = _DAYS[d.weekday()]
     if pattern.startswith("daily"):
         exc = re.search(r"except\s+(\w{3})", pattern)
-        return not (exc and exc.group(1) == dow)
+        return (not (exc and exc.group(1) == dow)), predicted
     found = re.findall(r"\b(mon|tue|wed|thu|fri|sat|sun|son)\w*", pattern)
     if not found or re.search(r"times|every|week|day", pattern):
-        return None                                  # "2-3 times per week", "every 2nd day"...
-    return dow in {"sun" if f == "son" else f for f in found}
+        return None, False                           # "2-3 times per week", "every 2nd day"...
+    return dow in {"sun" if f == "son" else f for f in found}, predicted
 
 
 # ---------- search ----------
@@ -262,7 +285,10 @@ def find_night_trains(origin: str, destination: str, date: str | None = None) ->
             if travel:
                 # service pattern refers to the day the train leaves its first stop
                 origin_day = travel - timedelta(days=offs[i])
-                item["runs_on_date"] = _runs_on(trip.get("service_id", ""), origin_day)
+                runs, predicted = _runs_on(trip.get("service_id", ""), origin_day)
+                item["runs_on_date"] = runs
+                # times may also change at the timetable change, even if the pattern is current
+                item["predicted"] = predicted or travel > TIMETABLE_CHANGE
             results.append(item)
             break
 
@@ -278,8 +304,11 @@ def find_night_trains(origin: str, destination: str, date: str | None = None) ->
         out["note"] = ("Schedule data only: no prices or availability. runs_on_date true/false is "
                        "a best-effort reading of 'runs'; null means unclear. Always confirm the "
                        "date on booking_url.")
-        if travel and travel > Date(2026, 12, 12):
-            out["note"] += " Date is after the 13 Dec 2026 timetable change; times may differ."
+        if travel and any(r["predicted"] for r in results):
+            out["predicted_note"] = ("Trains with predicted=true are PREDICTED from earlier "
+                                     "timetables (the date is beyond the published data or after "
+                                     "the 13 Dec 2026 timetable change). Times and days may differ. "
+                                     "Show the plain time and start the Notes cell with 'predicted'.")
     else:
         out["note"] = "No direct night train found in the database for this pair."
         out["did_you_mean"] = {origin: _suggest(data, origin), destination: _suggest(data, destination)}

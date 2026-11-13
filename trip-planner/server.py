@@ -18,10 +18,11 @@ def public(chat: dict) -> dict:
     msgs = []
     for m in chat["messages"]:
         if m["role"] == "agent":
-            text, questions = planner.split_questions(m["text"])
+            text, booking = planner.split_booking(m["text"], chat.get("urls", []))
+            text, questions = planner.split_questions(text)
         else:
-            text, questions = m["text"], []
-        msgs.append({"role": m["role"], "text": text, "questions": questions})
+            text, questions, booking = m["text"], [], []
+        msgs.append({"role": m["role"], "text": text, "questions": questions, "booking": booking})
     return {"id": chat["id"], "messages": msgs}
 
 def get_or_404(chat_id: str) -> dict:

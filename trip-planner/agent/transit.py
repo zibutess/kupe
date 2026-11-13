@@ -86,6 +86,11 @@ def plan_transit_trip(origin: str, destination: str, depart_at: str | None = Non
         itineraries.append({"duration": route.get("duration"), "steps": steps})
 
     result = {"itineraries": itineraries}
+    if depart_at and depart_at[:10] > "2026-12-12":
+        result["predicted"] = True
+        result["predicted_note"] = ("Date is after the 13 Dec 2026 timetable change or beyond "
+                                    "published data: these times are predicted and may differ. "
+                                    "Show the plain time and start the Notes cell with 'predicted'.")
     _cache[key] = (time.time(), result)
     return result
 

@@ -15,11 +15,32 @@ async function api(path, options = {}) {
   return res.json();
 }
 
+// "!" after a time = predicted timetable. Turn it into a badge and tint the row;
+// a paragraph starting with "! =" is the legend and becomes a callout.
+function markPredicted(el) {
+  el.querySelectorAll("tbody tr").forEach((tr) => {
+    const cell = tr.cells[tr.cells.length - 1];
+    const m = cell && cell.textContent.match(/^\s*(?:\(?predicted\)?|!)\s*[·:,;-]?\s*(.*)$/i);
+    if (!m) return;
+    const badge = document.createElement("span");
+    badge.className = "predicted-badge";
+    badge.textContent = "predicted";
+    badge.title = "Predicted timetable: may differ";
+    cell.textContent = m[1] ? " " + m[1] : "";
+    cell.prepend(badge);
+    tr.classList.add("predicted");
+  });
+  el.querySelectorAll("p").forEach((p) => {
+    if (/^\s*(!|predicted)\s*=/i.test(p.textContent)) p.classList.add("predicted-legend");
+  });
+}
+
 function bubble(role, text) {
   const el = document.createElement("div");
   el.className = `bubble ${role}`;
   if (role === "agent") {
     el.innerHTML = DOMPurify.sanitize(marked.parse(text));
+    markPredicted(el);
     el.querySelectorAll("table").forEach((t) => {
       const card = document.createElement("div");
       card.className = "table-card";
@@ -32,6 +53,92 @@ function bubble(role, text) {
   messagesEl.append(el);
   messagesEl.scrollTop = messagesEl.scrollHeight;
   return el;
+}
+
+// ---- booking checklist: ordered legs, deep link to the operator, tick off as booked ----
+const bookKey = (id, i) => `kupe:booked:${id}:${i}`;
+const loadBooked = (key) => { try { return new Set(JSON.parse(localStorage.getItem(key) || "[]")); } catch { return new Set(); } };
+
+function bookingCard(items, id, msgIndex) {
+  const key = bookKey(id, msgIndex);
+  const done = loadBooked(key);
+  const card = document.createElement("section");
+  card.className = "booking";
+  const head = document.createElement("div");
+  head.className = "booking-head";
+  const title = document.createElement("span");
+  title.textContent = "Book your journey";
+  const count = document.createElement("span");
+  count.className = "booking-count";
+  head.append(title, count);
+  const ol = document.createElement("ol");
+
+  const refresh = () => {
+    count.textContent = `${done.size} of ${items.length} booked`;
+    card.classList.toggle("all-done", done.size === items.length);
+  };
+
+  items.forEach((it, i) => {
+    const li = document.createElement("li");
+    li.classList.toggle("done", done.has(i));
+    const box = document.createElement("input");
+    box.type = "checkbox";
+    box.checked = done.has(i);
+    box.setAttribute("aria-label", `Mark ${it.label} as booked`);
+    box.onchange = () => {
+      box.checked ? done.add(i) : done.delete(i);
+      li.classList.toggle("done", box.checked);
+      localStorage.setItem(key, JSON.stringify([...done]));
+      refresh();
+    };
+
+    const body = document.createElement("div");
+    body.className = "leg";
+    const route = document.createElement("strong");
+    route.textContent = it.label;
+    const meta = document.createElement("span");
+    meta.className = "leg-meta";
+    meta.textContent = [it.date, it.depart, [it.operator, it.train].filter(Boolean).join(" ")]
+      .filter(Boolean).join(" · ");
+    body.append(route, meta);
+    if (it.note) {
+      const note = document.createElement("span");
+      note.className = "leg-note";
+      note.textContent = it.note;
+      body.append(note);
+    }
+
+    const actions = document.createElement("div");
+    actions.className = "leg-actions";
+    if (/^https?:\/\//.test(it.url)) {
+      const a = document.createElement("a");
+      a.href = it.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+      a.textContent = "Open booking";
+      actions.append(a);
+    } else {
+      const none = document.createElement("span");
+      none.className = "leg-meta";
+      none.textContent = "Check the operator";
+      actions.append(none);
+    }
+    // operator pages don't take reliable prefilled params, so copy what to type in
+    const copy = document.createElement("button");
+    copy.type = "button";
+    copy.textContent = "Copy details";
+    copy.onclick = async () => {
+      const text = `${it.label}${it.date ? ", " + it.date : ""}${it.depart ? " " + it.depart : ""}${it.train ? " (" + it.train + ")" : ""}`;
+      try { await navigator.clipboard.writeText(text); copy.textContent = "Copied"; }
+      catch { copy.textContent = text; }
+      setTimeout(() => (copy.textContent = "Copy details"), 1600);
+    };
+    actions.append(copy);
+
+    li.append(box, body, actions);
+    ol.append(li);
+  });
+  refresh();
+  card.append(head, ol);
+  return card;
 }
 
 function questionForm(questions) {
@@ -66,6 +173,10 @@ function renderChat(chat) {
   chat.messages.forEach((m, i) => {
     const el = bubble(m.role, m.text);
     if (i === 0 && m.role === "agent") el.classList.add("opening");
+    if (m.role === "agent" && m.booking && m.booking.length) {
+      el.append(bookingCard(m.booking, chat.id, i));
+      el.classList.add("wide");
+    }
     const isLast = i === chat.messages.length - 1;
     if (m.role === "agent" && m.questions.length && isLast) {
       el.append(questionForm(m.questions));
