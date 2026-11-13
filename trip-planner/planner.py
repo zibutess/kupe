@@ -1,16 +1,34 @@
-import os, json, uuid, anthropic
+import os, re, json, uuid, anthropic
 from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
-from agent.transit import TOOL_HANDLERS
+from agent.transit import TOOL_HANDLERS as TRANSIT_HANDLERS
+from agent.attractions import TOOL_HANDLERS as ATTRACTION_HANDLERS
+
+TOOL_HANDLERS = {**TRANSIT_HANDLERS, **ATTRACTION_HANDLERS}
 
 client = anthropic.Anthropic()
-MAX_TOOL_CALLS = 4          # per user message, caps Google spend
+MAX_TOOL_CALLS = 6          # per user message, caps Google spend
 CHAT_DIR = Path("chats")
 CHAT_DIR.mkdir(exist_ok=True)
 FIRST_QUESTION = "What is your next destination?"
+QUESTIONS_RE = re.compile(r"```questions\s*(.*?)```", re.S)
+
+
+# ---------- helpers ----------
+
+def split_questions(text: str):
+    """Return (text without the questions block, list of questions)."""
+    m = QUESTIONS_RE.search(text)
+    if not m:
+        return text, []
+    try:
+        questions = json.loads(m.group(1))
+    except json.JSONDecodeError:
+        return text, []
+    return QUESTIONS_RE.sub("", text).strip(), questions
 
 
 # ---------- saved chats ----------
@@ -21,23 +39,24 @@ def chat_path(chat_id: str) -> Path:
 def save_chat(chat: dict) -> None:
     chat_path(chat["id"]).write_text(json.dumps(chat, indent=2, ensure_ascii=False))
 
+def load_chat(chat_id: str):
+    if not re.fullmatch(r"[0-9a-f]{8}", chat_id):
+        return None
+    p = chat_path(chat_id)
+    return json.loads(p.read_text()) if p.exists() else None
+
 def list_chats() -> list[dict]:
     chats = [json.loads(p.read_text()) for p in CHAT_DIR.glob("*.json")]
     return sorted(chats, key=lambda c: c["created"], reverse=True)
 
 def new_chat() -> dict:
-    session = client.beta.sessions.create(
-        agent=os.environ["AGENT_ID"],
-        environment_id=os.environ["ENVIRONMENT_ID"],
-        vault_ids=[os.environ["VAULT_ID"]],
-        title="Trip plan",
-    )
+    """Instant: the agent session is created lazily on the first message."""
     chat = {
         "id": uuid.uuid4().hex[:8],
-        "session_id": session.id,
+        "session_id": None,
         "created": datetime.now().isoformat(timespec="seconds"),
-        "messages": [],     # [{"role": "user"|"agent", "text": "..."}]
-        "seen": [],         # event ids already handled (avoids replays on resume)
+        "messages": [{"role": "agent", "text": FIRST_QUESTION}],
+        "seen": [],
     }
     save_chat(chat)
     return chat
@@ -45,7 +64,20 @@ def new_chat() -> dict:
 
 # ---------- talking to the agent ----------
 
+def ensure_session(chat: dict) -> None:
+    if chat.get("session_id"):
+        return
+    session = client.beta.sessions.create(
+        agent=os.environ["AGENT_ID"],
+        environment_id=os.environ["ENVIRONMENT_ID"],
+        vault_ids=[os.environ["VAULT_ID"]],
+        title="Trip plan",
+    )
+    chat["session_id"] = session.id
+    save_chat(chat)
+
 def send_message(chat: dict, text: str) -> str:
+    ensure_session(chat)
     out, pending, calls = [], {}, 0
     seen = set(chat["seen"])
 
@@ -56,11 +88,11 @@ def send_message(chat: dict, text: str) -> str:
                      "content": [{"type": "text", "text": text}]}],
         )
         for event in stream:
-            eid_ = getattr(event, "id", None)
-            if eid_ and eid_ in seen:
-                continue            # old event replayed on a resumed session
-            if eid_:
-                seen.add(eid_)
+            event_id = getattr(event, "id", None)
+            if event_id and event_id in seen:
+                continue
+            if event_id:
+                seen.add(event_id)
 
             if event.type == "agent.message":
                 out += [b.text for b in event.content if b.type == "text"]
@@ -97,7 +129,18 @@ def send_message(chat: dict, text: str) -> str:
     return "".join(out)
 
 
-# ---------- chat loop ----------
+def handle_user_text(chat: dict, text: str) -> str:
+    """One user turn: send to agent, store both sides, save."""
+    first_turn = not any(m["role"] == "user" for m in chat["messages"])
+    chat["messages"].append({"role": "user", "text": text})
+    payload = f"My next destination: {text}" if first_turn else text
+    reply = send_message(chat, payload)
+    chat["messages"].append({"role": "agent", "text": reply})
+    save_chat(chat)
+    return reply
+
+
+# ---------- terminal chat (for testing without the frontend) ----------
 
 def choose_chat() -> dict:
     chats = list_chats()
@@ -113,37 +156,36 @@ def choose_chat() -> dict:
         return chats[int(pick) - 1]
     return new_chat()
 
-def show_history(chat: dict) -> None:
-    for m in chat["messages"]:
-        who = "You" if m["role"] == "user" else "Agent"
-        print(f"\n{who}: {m['text']}")
+def ask_questions(questions: list[dict]) -> str:
+    print("\nThe agent has a few questions (leave blank to skip):")
+    lines = []
+    for q in questions:
+        hint = f" ({q['placeholder']})" if q.get("placeholder") else ""
+        ans = input(f"  [ ______ ] {q['label']}{hint}: ").strip()
+        if ans:
+            lines.append(f"{q['label']} {ans}")
+    return "\n".join(lines)
 
 def main() -> None:
     chat = choose_chat()
-    if chat["messages"]:
-        show_history(chat)
-    else:
-        print(f"\nAgent: {FIRST_QUESTION}")
-        chat["messages"].append({"role": "agent", "text": FIRST_QUESTION})
-        save_chat(chat)
+    questions = []
+    for m in chat["messages"]:
+        who = "You" if m["role"] == "user" else "Agent"
+        shown, questions = split_questions(m["text"]) if m["role"] == "agent" else (m["text"], [])
+        print(f"\n{who}: {shown}")
 
     print("\n(type 'quit' to exit; your chat is saved)")
     while True:
-        text = input("\nYou: ").strip()
+        text = ask_questions(questions) if questions else ""
+        if not text:
+            text = input("\nYou: ").strip()
         if text.lower() in ("quit", "exit"):
             break
         if not text:
             continue
-
-        first_turn = not any(m["role"] == "user" for m in chat["messages"])
-        chat["messages"].append({"role": "user", "text": text})
-        # the first answer is the destination, so label it for the agent
-        payload = f"My next destination: {text}" if first_turn else text
-
-        reply = send_message(chat, payload)
-        chat["messages"].append({"role": "agent", "text": reply})
-        save_chat(chat)
-        print(f"\nAgent: {reply}")
+        reply = handle_user_text(chat, text)
+        shown, questions = split_questions(reply)
+        print(f"\nAgent: {shown}")
 
 if __name__ == "__main__":
     main()

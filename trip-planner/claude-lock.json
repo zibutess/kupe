@@ -14,10 +14,10 @@
     "./agent/trip-planner.md": {
       "kind": "agent",
       "id": "agent_0128Bz2M6G5augtRg3gxaTTq",
-      "version": "4",
-      "hash": "2cb9fae04916c4280955425ea863bd98",
-      "remote_hash": "ce82251381cd2649ed370ce96d190139",
-      "stamp": "4"
+      "version": "5",
+      "hash": "f754e12981090988716e95443574e7c9",
+      "remote_hash": "adb7cb4c4b1e48e3f271ae38bcb14ce8",
+      "stamp": "5"
     }
   }
 }
