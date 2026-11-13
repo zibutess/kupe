@@ -6,11 +6,12 @@ from dotenv import load_dotenv
 load_dotenv()
 from agent.transit import TOOL_HANDLERS as TRANSIT_HANDLERS
 from agent.attractions import TOOL_HANDLERS as ATTRACTION_HANDLERS
+from agent.night_trains import TOOL_HANDLERS as NIGHT_HANDLERS
 
-TOOL_HANDLERS = {**TRANSIT_HANDLERS, **ATTRACTION_HANDLERS}
+TOOL_HANDLERS = {**TRANSIT_HANDLERS, **ATTRACTION_HANDLERS, **NIGHT_HANDLERS}
 
 client = anthropic.Anthropic()
-MAX_TOOL_CALLS = 6          # per user message, caps Google spend
+MAX_TOOL_CALLS = 8         # per user message, caps Google spend
 CHAT_DIR = Path("chats")
 CHAT_DIR.mkdir(exist_ok=True)
 FIRST_QUESTION = "What is your next destination?"
